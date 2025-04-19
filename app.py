@@ -99,7 +99,7 @@ def index():
 def match_resume():
     resume_file = request.files['resume']
     jd_text = request.form['jd']
-
+    
     # Determine file type
     filename = resume_file.filename
     extension = os.path.splitext(filename)[1].lower()
