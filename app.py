@@ -6,6 +6,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.corpus import stopwords
 from collections import Counter
+import os
+import fitz  # PyMuPDF
 
 
 app = Flask(__name__)
@@ -82,6 +84,12 @@ def extract_technical_keywords(text):
     combined_keywords = set(dict_matches) | filtered_terms
     return sorted(combined_keywords)
 
+def extract_text_from_pdf(file):
+    text = ""
+    with fitz.open(stream=file.read(), filetype="pdf") as doc:
+        for page in doc:
+            text += page.get_text()
+    return text
 
 @app.route('/')
 def index():
@@ -92,6 +100,17 @@ def match_resume():
     resume_file = request.files['resume']
     jd_text = request.form['jd']
 
+    # Determine file type
+    filename = resume_file.filename
+    extension = os.path.splitext(filename)[1].lower()
+    
+    if extension == '.docx':
+        resume_text = docx2txt.process(resume_file)
+    elif extension == '.pdf':
+        resume_text = extract_text_from_pdf(resume_file)
+    else:
+        return "Unsupported file type. Please upload a .docx or .pdf", 400
+    
     resume_text = docx2txt.process(resume_file)
 
     # Extract technical keywords from JD
