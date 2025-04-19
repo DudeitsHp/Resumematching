@@ -111,8 +111,6 @@ def match_resume():
     else:
         return "Unsupported file type. Please upload a .docx or .pdf", 400
     
-    resume_text = docx2txt.process(resume_file)
-
     # Extract technical keywords from JD
     jd_keywords = extract_technical_keywords(jd_text)
     jd_keywords_str = ' '.join(jd_keywords)
