@@ -71,14 +71,10 @@
 
     <div class="container">
         <h2 class="mb-4">✅ Resume Match Score: {{ score }}%</h2>
-        <a href="/" class="btn btn-success mb-4">🔁 Start Over</a>
-        <button class="btn btn-outline-secondary mb-3" onclick="toggleUnmatched()">🔍 Show/Hide Unmatched Keywords</button>
-        <div id="unmatchedBox" class="mb-4 hide-box">
-            <strong>Unmatched Keywords:</strong>
-            <div>{{ unmatched | join(', ') }}</div>
+        <h5>📄 Job Description (with highlights)</h5>
+        <div class="highlight-box">
+            {{ jd_highlighted | safe }}
         </div>
-
-        <div class="row">
             <div class="col-md-6">
                 <h5>📄 Resume (with highlights)</h5>
                 <div class="highlight-box">{{ resume_highlighted | safe }}</div>
@@ -103,15 +99,33 @@
             </div>
         </div>
     </div>
-
+    <br>
+    <h5>🔥 Top Keywords in Job Description</h5>
+    <div>
+    {% for word in top_keywords %}
+        <span class="badge bg-secondary m-3">{{ word }}</span>
+    {% endfor %}
+    </div>
+    <div class="alert alert-info mt-4">
+        <h5>💡 Insights</h5>
+        <ul>
+            <li>You're missing <strong>{{ unmatched|length }}</strong> key skills from the JD.</li>
+            <li>Your resume includes <strong>{{ matched|length }}</strong> matching technical skills.</li>
+            <li>Try adding: <span class="unmatch">{{ unmatched[:5] | join(', ') }}</span> for better alignment.</li>
+        </ul>
+    </div>
+    <h5>🎯 Customization Suggestions</h5>
+    <ul>
+    {% for keyword in unmatched[:5] %}
+        <li>Consider including <strong>{{ keyword }}</strong> if it's relevant to your experience.</li>
+    {% endfor %}
+    </ul>
+    <br>
+    <div style ="text-align:center">
+    <a href="/" class="btn btn-success mb-4">🔁 Start Over</a>
     <script>
         function toggleDarkMode() {
             document.body.classList.toggle("dark-mode");
-        }
-
-        function toggleUnmatched() {
-            const box = document.getElementById("unmatchedBox");
-            box.classList.toggle("hide-box");
         }
     </script>
 </body>
