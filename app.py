@@ -12,7 +12,7 @@ nlp = spacy.load("en_core_web_sm")
 
 # Load the master skill list
 skills_df = pd.read_csv("skills.csv")
-skills_list = [skill.lower().strip() for skill in skills_df['skill']]
+skills_list = [str(skill).strip().lower() for skill in skills_df['skill'] if pd.notna(skill)]
 
 def clean_text(text):
     text = re.sub(r'[^a-zA-Z\s]', '', text)
@@ -24,7 +24,7 @@ def extract_skills_spacy(text):
     patterns = [nlp.make_doc(skill) for skill in skills_list]
     matcher.add("SKILLS", patterns)
     matches = matcher(doc)
-    found_skills = set([doc[start:end].text for match_id, start, end in matches])
+    found_skills = set([doc[start:end].text.lower() for _, start, end in matches])
     return found_skills
 
 @app.route('/')
