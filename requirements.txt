@@ -1,0 +1,5 @@
+flask
+pandas
+docx2txt
+spacy
+fuzzywuzzy
