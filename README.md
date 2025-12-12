@@ -1,120 +1,94 @@
-# 🧠 Resume Matcher Web App
+# 🧠 Resume Matcher AI
 
-This is a smart **Resume vs Job Description Matcher** web application built with **Flask**, **spaCy**, **scikit-learn**, and **NLTK**. The app analyzes a `.docx` resume against a pasted job description, extracts and compares technical keywords, and calculates a **match score** using **cosine similarity**. It also highlights matched and unmatched keywords for better clarity.
-
----
+A powerful, modern **Resume vs Job Description Matcher** web application. It analyzes resumes (PDF/DOCX) against job descriptions to identify key skills, calculating a weighted **match score** based on the frequency of skills in the job description.
 
 ## 🚀 Features
 
-- 🔍 Extracts key **technical terms** from job descriptions and resumes
-- 🤖 Uses **NLP (spaCy)** for chunking & named entity recognition
-- 📊 Calculates a **match percentage** using cosine similarity
-- ✨ Highlights **matched** and **unmatched** terms visually
-- 🌗 Includes **Dark Mode** for better UX
-- 📄 Accepts `.docx` resume file uploads
+- **� Multi-Format Support:** Upload **PDF** or **DOCX** resumes.
+- **✨ Smart Skill Extraction:**
+    - Correctly identifies technical terms like **C++**, **C#**, **.NET**, **Node.js** (doesn't strip special chars).
+    - Uses **Spacy** and a custom PhraseMatcher for high accuracy.
+- **🎨 Premium UI/UX:**
+    - Space-grade **Dark Mode** design.
+    - **Interactive Score Gauge** for instant visual feedback.
+    - **Matched vs Missing** skills displayed as clear tags.
+    - Drag-and-drop style file upload.
+- **📊 Weighted Scoring:** The score isn't just a count; it weights skills based on how often they appear in the job description (signaling importance).
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Backend: [Python](https://www.python.org/), [Flask](https://flask.palletsprojects.com/)
-- NLP: [spaCy](https://spacy.io/), [NLTK](https://www.nltk.org/)
-- ML: [scikit-learn](https://scikit-learn.org/)
-- Frontend: [HTML5](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5), [Bootstrap 5](https://getbootstrap.com/)
+- **Backend:** [Python](https://www.python.org/), [Flask](https://flask.palletsprojects.com/)
+- **NLP:** [spaCy](https://spacy.io/)
+- **PDF Processing:** [pdfminer.six](https://pdfminersix.readthedocs.io/)
+- **DOCX Processing:** [docx2txt](https://pypi.org/project/docx2txt/)
+- **Matching:** [FuzzyWuzzy](https://github.com/seatgeek/fuzzywuzzy) (for fuzzy logic), Custom Regex & Spacy PhraseMatcher
 
 ---
 
 ## 📸 Screenshots
 
-| Upload & Paste JD | Results Page |
+| Modern Home Page | Analysis Results |
 |-------------------|--------------|
 | ![Upload Screenshot](screenshot/index.png) | ![Result Screenshot](screenshot/result.png) |
+*(Note: Screenshots in the `screenshot` folder may need to be updated to reflect the new UI)*
 
 ---
 
-## ⚙️ Installation
+## ⚙️ How to Run
 
-1. **Clone the repository**
+### 1. Clone the repository
+```bash
 git clone https://github.com/yourusername/resume-matcher.git
 cd resume-matcher
+```
 
-2. **Create a virtual environment**
+### 2. Create a virtual environment
+```bash
+python -m venv .venv
+source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+```
 
-python -m venv venv
-source venv/bin/activate   # On Windows use: venv\Scripts\activate
-
-3. **Install dependencies**
+### 3. Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
-
-4. **Download spacy model**
+### 4. Download spacy model
+```bash
 python -m spacy download en_core_web_sm
+```
 
-
-5. **Run the app**
+### 5. Run the app
+```bash
 python app.py
+```
 
-6. **Visit the browser**
-http://127.0.0.1:5000/
+### 6. Visit the browser
+Open **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
+
+---
 
 ## 📂 Project Structure
+
+```
 resume-matcher/
 │
-├── app.py                  # Flask app
+├── app.py                  # Main Flask application
+├── utils.py                # Core logic (PDF extraction, text cleaning, matching)
 ├── requirements.txt        # Dependencies
+├── skills.csv              # Database of skills to match against
 ├── templates/
-│   ├── index.html
-│   └── result.html
-├── static/                 # Optional: CSS or JS files
-├── screenshots/            # Optional: Add images for README
+│   ├── index.html          # Modern Upload Page
+│   └── result.html         # Premium Results Page
+├── static/
+│   └── style.css           # Dark mode CSS variables and styles
 └── README.md
+```
 
-## 🧠 How It Works
-User uploads a .docx resume and pastes a job description.
-
-App uses NLP and a custom tech keyword list to extract meaningful keywords.
-
-Cosine similarity is calculated between resume and JD keyword vector.
-
-Score is shown with highlighted matches and misses.
-
-
-## 📌 Customization
-You can update the core technical keyword list in app.py under:
-
-python:
-
-TECH_KEYWORDS = {
-    'python', 'etl', 'ab initio', 'data modeling', ...
-}
-You can also tweak logic to include or exclude specific roles, phrases, or technologies.
+## � Customization
+You can update the known skills list by editing **`skills.csv`**. The app loads this CSV on startup to build its NLP patterns.
 
 ## 🤝 Contributing
-Contributions, issues and feature requests are welcome! Feel free to fork this project and submit a PR.
-
-## 📄 License
-This project is licensed under the MIT License.
-
-## 🙌 Acknowledgements
-spaCy
-
-NLTK
-
-scikit-learn
-
-Bootstrap
-
-docx2txt
-
-## 💡 Future Enhancements
-PDF resume support
-
-Keyword category breakdown
-
-Multi-language support
-
-Upload JD as a file
-
-
-
-
+Contributions are welcome! Feel free to fork and submit a PR.
