@@ -1,35 +1,11 @@
 from flask import Flask, render_template, request
-import pandas as pd
-import docx2txt
-import re
-import spacy
-from spacy.matcher import PhraseMatcher
-from fuzzywuzzy import fuzz
-from collections import Counter
-
+import os
+from utils import load_skills, extract_skills, extract_text_from_pdf, extract_text_from_docx, highlight_skills
 
 app = Flask(__name__)
-nlp = spacy.load("en_core_web_sm")
 
-# Load the master skill list
-skills_df = pd.read_csv("skills.csv")
-skills_list = [str(skill).strip().lower() for skill in skills_df['skill'] if pd.notna(skill)]
-
-def clean_text(text):
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    return text.lower()
-
-def extract_skills_spacy(text):
-    """Return a Counter of skill occurrences in the given text."""
-    doc = nlp(clean_text(text))
-    matches = skill_matcher(doc)
-    found = [doc[start:end].text.lower() for _, start, end in matches]
-    return Counter(found)
-
-# Build a PhraseMatcher that can recognise both single‑ and multi‑word skills
-skill_matcher = PhraseMatcher(nlp.vocab, attr='LOWER')
-patterns = [nlp.make_doc(skill) for skill in skills_list]
-skill_matcher.add("SKILLS", patterns)
+# Load matcher once at startup
+skill_matcher = load_skills("skills.csv")
 
 @app.route('/')
 def index():
@@ -37,34 +13,59 @@ def index():
 
 @app.route('/match', methods=['POST'])
 def match():
+    if 'job_description' not in request.form or 'resume' not in request.files:
+        return "Missing data", 400
+
     jd_text = request.form['job_description']
     resume_file = request.files['resume']
-    resume_text = docx2txt.process(resume_file)
-    jd_counter = extract_skills_spacy(jd_text)
-    resume_counter = extract_skills_spacy(resume_text)
+    
+    filename = resume_file.filename.lower()
+    resume_text = ""
+
+    if filename.endswith('.pdf'):
+        resume_text = extract_text_from_pdf(resume_file)
+    elif filename.endswith('.docx'):
+        resume_text = extract_text_from_docx(resume_file)
+    else:
+        return "Invalid file format. Please upload PDF or DOCX.", 400
+
+    if not resume_text:
+        return "Could not extract text from resume.", 400
+
+    if not skill_matcher:
+         return "Skill database not loaded.", 500
+
+    jd_counter = extract_skills(jd_text, skill_matcher)
+    resume_counter = extract_skills(resume_text, skill_matcher)
+
     jd_skills_set = set(jd_counter.keys())
     resume_skills_set = set(resume_counter.keys())
+
     matched = jd_skills_set.intersection(resume_skills_set)
     unmatched = jd_skills_set.difference(resume_skills_set)
-    # Highlight matched skills in both texts
-    # Highlight matched and unmatched skills in both texts
-    def highlight(text, skills, css_class):
-        highlighted = text
-        for skill in skills:
-            pattern = rf"\\b{re.escape(skill)}\\b"
-            replacement = f"<span class=\"{css_class}\">{skill}</span>"
-            highlighted = re.sub(pattern, replacement, highlighted, flags=re.IGNORECASE)
-        return highlighted
-
-    highlighted_jd = highlight(jd_text, matched, "match")
-    highlighted_jd = highlight(highlighted_jd, unmatched, "unmatch")
-    highlighted_resume = highlight(resume_text, matched, "match")
-    highlighted_resume = highlight(highlighted_resume, unmatched, "unmatch")
-    # Compute weighted score based on JD skill frequencies
+    
+    # Calculate score
+    # Weighted score: (sum of weights of matched skills / sum of weights of all JD skills) * 100
+    # Weight = frequency in JD
     total_weight = sum(jd_counter.values())
     matched_weight = sum(jd_counter[skill] for skill in matched)
     score = round((matched_weight / total_weight) * 100, 2) if total_weight else 0
-    return render_template('result.html', highlighted_jd=highlighted_jd, matched=matched, unmatched=unmatched, highlighted_resume=highlighted_resume, score=score)
+
+    # Highlight skills
+    highlighted_jd = highlight_skills(jd_text, matched, "match")
+    highlighted_jd = highlight_skills(highlighted_jd, unmatched, "unmatch")
+    
+    highlighted_resume = highlight_skills(resume_text, matched, "match")
+    highlighted_resume = highlight_skills(highlighted_resume, unmatched, "unmatch")
+
+    return render_template(
+        'result.html', 
+        highlighted_jd=highlighted_jd, 
+        matched=matched, 
+        unmatched=unmatched, 
+        highlighted_resume=highlighted_resume, 
+        score=score
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

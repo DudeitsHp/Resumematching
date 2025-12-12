@@ -3,3 +3,4 @@ pandas
 docx2txt
 spacy
 fuzzywuzzy
+pdfminer.six

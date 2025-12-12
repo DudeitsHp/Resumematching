@@ -1,43 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Match Result</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #eee;
-    }
-    .match {
-      background-color: #228B22; /* dark green */
-      color: #fff;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    .unmatch {
-      background-color: #B22222; /* dark red */
-      color: #fff;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    a { color: #00bcd4; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
-  <h2>Match Score: {{ score }}%</h2>
-  <h3>Matched Skills:</h3>
-  <p>{{ matched|join(', ') }}</p>
 
-  <h3>Unmatched Skills:</h3>
-  <p>{{ unmatched|join(', ') }}</p>
+  <div class="container">
 
-  <h3>Job Description (Highlighted):</h3>
-  <p>{{ highlighted_jd|safe }}</p>
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <a href="/" class="back-link">← Upload New Resume</a>
+      <h1 style="margin-top: 1rem;">Match Analysis</h1>
+    </div>
 
-  <h3>Resume (Highlighted):</h3>
-  <p>{{ highlighted_resume|safe }}</p>
+    <!-- Circular Score Gauge -->
+    <div class="score-container">
+      <svg viewBox="0 0 36 36" class="circular-chart">
+        <path class="circle-bg" d="M18 2.0845
+             a 15.9155 15.9155 0 0 1 0 31.831
+             a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle" stroke="{{ '#00e676' if score >= 70 else '#ffde03' if score >= 40 else '#ff5252' }}"
+          stroke-dasharray="{{ score }}, 100" d="M18 2.0845
+             a 15.9155 15.9155 0 0 1 0 31.831
+             a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <text x="18" y="20.35" class="percentage">{{ score }}%</text>
+      </svg>
+    </div>
 
+    <!-- Skills Breakdown -->
+    <div class="skills-section">
+      <h3>✅ Matched Skills</h3>
+      {% if matched %}
+      <div class="tag-container">
+        {% for skill in matched %}
+        <span class="tag match">{{ skill|title }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color: var(--text-muted)">No matching skills found.</p>
+      {% endif %}
+    </div>
 
-  <a href="/">Back</a>
+    <div class="skills-section">
+      <h3>⚠️ Missing Skills</h3>
+      {% if unmatched %}
+      <div class="tag-container">
+        {% for skill in unmatched %}
+        <span class="tag unmatch">{{ skill|title }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color: var(--primary)">Great job! You matched all requirements.</p>
+      {% endif %}
+    </div>
+
+    <!-- Text Analysis -->
+    <h3>Highlight Analysis</h3>
+    <div class="highlight-box">
+      <strong>Job Description:</strong><br><br>
+      {{ highlighted_jd|safe }}
+    </div>
+
+    <div class="highlight-box">
+      <strong>Resume Content:</strong><br><br>
+      {{ highlighted_resume|safe }}
+    </div>
+
+  </div>
+
 </body>
+
 </html>
